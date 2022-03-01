@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import os
 import urllib.request
+import subprocess
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
@@ -51,6 +52,8 @@ def downloadChapter(url, chapterNumber, mangaDir):
         downloadPage(pageURL, i, chapterDir, chapterNumber)
         i+=1
 
+    return chapterDir
+
 def main():
     manga = input("Qual nome do manga ?")
     mangaURL = input("Qual o link base do manga que deseja baixar ?")
@@ -73,7 +76,9 @@ def main():
 
     i = 0
     for i in range(len(chapters)):
-        downloadChapter(chapters[i], i, mangaDir)
+        chapterDir = downloadChapter(chapters[i], i, mangaDir)
+        print("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' " + chapterDir)
+        subprocess.call("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' '" + chapterDir + "'", shell=True)
 
 if __name__ == "__main__":
     main()
