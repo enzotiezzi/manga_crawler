@@ -2,10 +2,10 @@ import urllib.request
 
 import os
 
-def downloadPage(pageNumber, chapter):
-    url = "https://cdn.mangayabu.top/mangas/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-monologue/capitulo-01/" + str(pageNumber).zfill(2) + ".jpg"
+def downloadPage(pageNumber, chapter, currentChapter):
+    url = "https://cdn.mangayabu.top/mangas/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-monologue/capitulo-"+ str(currentChapter).zfill(2) +"/" + str(pageNumber).zfill(2) + ".jpg"
 
-    fullPath = chapter + "/" + chapter + "_" + str(pageNumber).zfill(2)
+    fullPath = chapter + "/" + chapter + "_" + str(pageNumber).zfill(2) + ".jpg"
 
     opener = urllib.request.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
@@ -14,9 +14,10 @@ def downloadPage(pageNumber, chapter):
     urllib.request.urlretrieve(url, fullPath)
 
 def main():
-    totalNumberOfPages = 51
+    currentChapter = 13
 
-    currentChapter = 1
+    totalNumberOfPages = 35
+
     chapter = "Chapter_" + str(currentChapter)
 
     if (not os.path.exists(chapter)):
@@ -24,7 +25,7 @@ def main():
 
     i = 0
     for i in range(totalNumberOfPages):
-        downloadPage(i, chapter)
+        downloadPage(i, chapter, currentChapter)
 
 if __name__ == "__main__":
     main()
