@@ -5,7 +5,7 @@ import subprocess
 import re
 
 def downloadPage(pageNumber, chapter, currentChapter):
-    url = "https://cdn.mangayabu.top/mangas/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-monologue/capitulo-"+ str(currentChapter).zfill(2) +"/" + str(pageNumber).zfill(2) + ".jpg"
+    url = "https://mangayabu.top/mangas2/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-monologue/capitulo-"+ str(currentChapter).zfill(2) +"/" + str(pageNumber).zfill(2) + ".jpg"
 
     fullPath = chapter + "/" + chapter + "_" + str(pageNumber).zfill(2) + ".jpg"
 
@@ -15,14 +15,14 @@ def downloadPage(pageNumber, chapter, currentChapter):
 
     urllib.request.urlretrieve(url, fullPath)
 
-    print("Download da página " + str(pageNumber).zfill(2) + " do capítulo " + str(currentChapter).zfill(2) + " feito com sucesso.")
+    print("Download da página " + str(pageNumber).zfill(2) + " do capítulo " + currentChapter.zfill(2) + " feito com sucesso.")
 
 def main():
-    currentChapter = int(input("Qual capítulo desejar baixar ? "))
+    currentChapter = input("Qual capítulo desejar baixar ? ")
 
     totalNumberOfPages = int(input("Quantas páginas esse capítulo tem ? "))
 
-    chapter = "Chapter_" + str(currentChapter)
+    chapter = "Chapter_" + currentChapter
 
     print("Verificando se pasta do capítulo já existe.")
 
@@ -36,7 +36,7 @@ def main():
     for i in range(totalNumberOfPages):
         downloadPage(i, chapter, currentChapter)
 
-    print("Capítulo " + str(currentChapter).zfill(2) + " baixado com sucesso")
+    print("Capítulo " + currentChapter.zfill(2) + " baixado com sucesso")
 
     print("Iniciando processo para gerar MOBI.")
 
