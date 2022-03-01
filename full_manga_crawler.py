@@ -7,10 +7,10 @@ import urllib.request
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-def downloadPage(pageURL, pageNumber, chapterDir):
+def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
     print("Page URL " + pageURL)
 
-    pagePath = chapterDir + "_" + str(pageNumber).zfill(2)
+    pagePath = chapterDir + "/" + str(chapterNumber).zfill(2) +  "_" + str(pageNumber).zfill(2) + ".jpg"
 
     opener = urllib.request.build_opener()
     opener.addheaders = [('User-agent', 'Mozilla/5.0')]
@@ -28,8 +28,8 @@ def fetchChapters(url):
 
     return links
 
-def downloadChapter(url, chapterNumber, manga, mainDir):
-    chapterDir = mainDir + "/" + manga + "/" + "Chapter_" + str(chapterNumber).zfill(2)
+def downloadChapter(url, chapterNumber, mangaDir):
+    chapterDir = mangaDir + "/" + "Chapter_" + str(chapterNumber).zfill(2)
 
     if(not os.path.exists(chapterDir)):
         os.mkdir(chapterDir)
@@ -41,15 +41,14 @@ def downloadChapter(url, chapterNumber, manga, mainDir):
 
     driver.get(url)
     webPage = driver.page_source
-    driver.quit()
 
-    links = re.findall('<img alt="Página \d+" .+>', webPage)
+    links = re.findall('data-src=".+?"', webPage)
 
     i=1
     for l in links:
         print("link " + l)
-        pageURL = re.search('"https:\/\/.+.jpg" ', l).group().strip().replace('"', '')
-        downloadPage(pageURL, i, chapterDir)
+        pageURL = l.replace("data-src=", "").replace('"', '')
+        downloadPage(pageURL, i, chapterDir, chapterNumber)
         i+=1
 
 def main():
@@ -70,9 +69,11 @@ def main():
     print("Buscando capítulos")
     chapters = fetchChapters(mangaURL)
 
+    chapters.reverse()
+
     i = 0
     for i in range(len(chapters)):
-        downloadChapter(chapters[i], i, manga, mainDir)
+        downloadChapter(chapters[i], i, mangaDir)
 
 if __name__ == "__main__":
     main()
