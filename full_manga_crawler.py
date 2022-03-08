@@ -6,7 +6,6 @@ import os
 import urllib.request
 import subprocess
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
     print("Page URL " + pageURL)
@@ -22,14 +21,19 @@ def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
     print("Download da página " + str(pageNumber).zfill(2) + " feito com sucesso.")
 
 def fetchChapters(url):
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
     driver.get(url)
     webPage = driver.page_source
+    driver.quit()
 
     links = re.findall('<a href="https:\/\/mangayabu\.top\/\?p=\d+" class="btn">Ler<\/a>', webPage)
 
     return links
 
 def downloadChapter(url, chapterNumber, mangaDir):
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
     chapterDir = mangaDir + "/" + "Chapter_" + str(chapterNumber).zfill(2)
 
     if(not os.path.exists(chapterDir)):
@@ -42,6 +46,7 @@ def downloadChapter(url, chapterNumber, mangaDir):
 
     driver.get(url)
     webPage = driver.page_source
+    driver.quit()
 
     links = re.findall('data-src=".+?"', webPage)
 
@@ -77,7 +82,7 @@ def main():
     i = 0
     for i in range(len(chapters)):
         chapterDir = downloadChapter(chapters[i], i, mangaDir)
-        print("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' " + chapterDir)
+        print("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' '" + chapterDir + "'")
         subprocess.call("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' '" + chapterDir + "'", shell=True)
 
 if __name__ == "__main__":
