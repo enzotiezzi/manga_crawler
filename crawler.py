@@ -5,7 +5,7 @@ import subprocess
 import re
 
 def downloadPage(pageNumber, chapter, currentChapter):
-    url = "https://mangayabu.top/mangas2/yahari-ore-no-seishun-love-comedy-wa-machigatteiru-monologue/capitulo-"+ str(currentChapter).zfill(2) +"/" + str(pageNumber).zfill(2) + ".jpg"
+    url = "https://cdn.mangayabu.top/mangas/tonikaku-kawaii/capitulo-"+ str(currentChapter).zfill(2) + "/" + str(pageNumber).zfill(2) + ".jpg"
 
     fullPath = chapter + "/" + chapter + "_" + str(pageNumber).zfill(2) + ".jpg"
 
@@ -40,7 +40,7 @@ def main():
 
     print("Iniciando processo para gerar MOBI.")
 
-    subprocess.call("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='Yahari Ore no Seishun Love Comedy wa Machigatteiru Monologue " + str(currentChapter).zfill(2) + "' " + chapter, shell=True)
+    subprocess.call("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='Tonikaku Kawaii - " + str(currentChapter).zfill(2) + "' " + chapter, shell=True)
 
 if __name__ == "__main__":
     main()
