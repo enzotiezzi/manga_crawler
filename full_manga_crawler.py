@@ -2,23 +2,75 @@ import re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 import os
 import urllib.request
 import subprocess
 import time
 
 def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
-    print("Page URL " + pageURL)
+    try:
+        
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-    pagePath = chapterDir + "/" + str(chapterNumber).zfill(2) +  "_" + str(pageNumber).zfill(2) + ".jpg"
+        driver.get(pageURL)
 
-    opener = urllib.request.build_opener()
-    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-    urllib.request.install_opener(opener)
+        webPage = driver.page_source
+        
+        links = re.findall('https:\/\/static2.mangalivre.net\/firefox.+?(?=")', webPage)
 
-    urllib.request.urlretrieve(pageURL, pagePath)
+        driver.quit()
+
+        print("Page URL " + pageURL)
+
+        pagePath = chapterDir + "/" + str(chapterNumber).zfill(2) +  "_" + str(pageNumber).zfill(2) + ".jpg"
+
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        urllib.request.install_opener(opener)
+
+        urllib.request.urlretrieve(links[len(links) -1], pagePath)
+        
+        print("Download da página " + str(pageNumber).zfill(2) + " feito com sucesso.")
+    except:
+        print("Erro Download da página " + str(pageNumber).zfill(2))
+
+def downloadChapter(url, chapterNumber, mangaDir):
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+    chapterDir = mangaDir + "/" + "Chapter_" + str(chapterNumber).zfill(2)
+
+    if(not os.path.exists(chapterDir)):
+        os.mkdir(chapterDir)
+        print("Criando diretório para capítulo " + str(chapterNumber).zfill(2))
+
+    page_index = 0
+
+    print("Chapter url " + url)
     
-    print("Download da página " + str(pageNumber).zfill(2) + " feito com sucesso.")
+    page_url = "https://mangalivre.net" + url + "#" + "/!page" + str(page_index)
+
+    driver.get(page_url)
+
+    webPage = driver.page_source
+
+    total_pages_element = re.findall('<em reader-total-pages="">.*<\/em>', webPage)
+    total_pages = re.findall('([0-9]+)', total_pages_element[0])
+    total_pages = int(total_pages[0])
+
+    driver.quit()
+
+    for index in range(total_pages-1):
+        pageURL = "https://mangalivre.net" + url + "#" + "/!page" + str(index)
+        print("link " + pageURL)
+        downloadPage(pageURL, index, chapterDir, chapterNumber)
+
+
+    return chapterDir
+
 
 def fetchChapters(url):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -27,7 +79,7 @@ def fetchChapters(url):
 
     SCROLL_PAUSE_TIME = 1.5
 
-# Get scroll height
+    # Get scroll height
     last_height = driver.execute_script("return document.body.scrollHeight")
 
     while True:
@@ -51,34 +103,6 @@ def fetchChapters(url):
 
     return links
 
-def downloadChapter(url, chapterNumber, mangaDir):
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-
-    chapterDir = mangaDir + "/" + "Chapter_" + str(chapterNumber).zfill(2)
-
-    if(not os.path.exists(chapterDir)):
-        os.mkdir(chapterDir)
-        print("Criando diretório para capítulo " + str(chapterNumber).zfill(2))
-
-    url = re.search('"https:\/\/.+" ', url).group().strip().replace('"', "")
-
-    print("Chapter url " + url)
-
-    driver.get(url)
-    webPage = driver.page_source
-    driver.quit()
-
-    links = re.findall('data-src=".+?"', webPage)
-
-    i=1
-    for l in links:
-        print("link " + l)
-        pageURL = l.replace("data-src=", "").replace('"', '')
-        downloadPage(pageURL, i, chapterDir, chapterNumber)
-        i+=1
-
-    return chapterDir
-
 def main():
     manga = input("Qual nome do manga ?")
     mangaURL = input("Qual o link base do manga que deseja baixar ?")
@@ -99,11 +123,11 @@ def main():
 
     chapters.reverse()
 
-    i = 0
+    startingPage = 11
     for i in range(len(chapters)):
-        chapterDir = downloadChapter(chapters[i], i, mangaDir)
-        print("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' '" + chapterDir + "'")
-        subprocess.call("docker exec -it kcc-cli kcc-c2e --format=MOBI -u -s --title='" + manga + " - " + str(i).zfill(2) + "' '" + chapterDir + "'", shell=True)
+        chapterDir = downloadChapter(chapters[i+startingPage], i+startingPage, mangaDir)
+        print("docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title='" + manga + " - " + str(i+startingPage).zfill(2) + "' '" + chapterDir + "'")
+        subprocess.call('docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title="' + manga + ' - ' + str(i+startingPage).zfill(2) + '" "' + chapterDir + '"', shell=True)
 
 if __name__ == "__main__":
     main()
