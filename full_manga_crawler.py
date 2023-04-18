@@ -5,7 +5,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import os
 import urllib.request
 import subprocess
-
+import time
 
 def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
     print("Page URL " + pageURL)
@@ -24,10 +24,30 @@ def fetchChapters(url):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
     driver.get(url)
-    webPage = driver.page_source
-    driver.quit()
 
-    links = re.findall('<a href="https:\/\/mangayabu\.top\/\?p=\d+" class="btn">Ler<\/a>', webPage)
+    SCROLL_PAUSE_TIME = 1.5
+
+# Get scroll height
+    last_height = driver.execute_script("return document.body.scrollHeight")
+
+    while True:
+        # Scroll down to bottom
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        # Wait to load page
+        time.sleep(SCROLL_PAUSE_TIME)
+
+        # Calculate new scroll height and compare with last scroll height
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+
+    webPage = driver.page_source
+
+    links = re.findall('(\/ler.+?(?="))', webPage)
+
+    driver.quit()
 
     return links
 
