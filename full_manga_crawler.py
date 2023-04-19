@@ -1,11 +1,10 @@
+# $ docker run -it --name kcc-cli -v <yourComicsDirPath>:/home/kcc/chapters wesleympg/kindle-comic-converter-cli
+
+
 import re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 import os
 import urllib.request
 import subprocess
@@ -32,7 +31,7 @@ def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
 
-        urllib.request.urlretrieve(links[len(links) -1], pagePath)
+        urllib.request.urlretrieve(links[len(links) - 1], pagePath)
         
         print("Download da página " + str(pageNumber).zfill(2) + " feito com sucesso.")
     except:
@@ -63,7 +62,7 @@ def downloadChapter(url, chapterNumber, mangaDir):
 
     driver.quit()
 
-    for index in range(total_pages-1):
+    for index in range(total_pages):
         pageURL = "https://mangalivre.net" + url + "#" + "/!page" + str(index)
         print("link " + pageURL)
         downloadPage(pageURL, index, chapterDir, chapterNumber)
@@ -123,8 +122,10 @@ def main():
 
     chapters.reverse()
 
-    startingPage = 11
+    startingPage = 0
     for i in range(len(chapters)):
+        if(i + startingPage >= len(chapters)):
+            break
         chapterDir = downloadChapter(chapters[i+startingPage], i+startingPage, mangaDir)
         print("docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title='" + manga + " - " + str(i+startingPage).zfill(2) + "' '" + chapterDir + "'")
         subprocess.call('docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title="' + manga + ' - ' + str(i+startingPage).zfill(2) + '" "' + chapterDir + '"', shell=True)
