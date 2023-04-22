@@ -25,7 +25,7 @@ def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
 
         print("Page URL " + pageURL)
 
-        pagePath = chapterDir + "/" + str(chapterNumber).zfill(2) +  "_" + str(pageNumber).zfill(2) + ".jpg"
+        pagePath = chapterDir + "/" + str(chapterNumber).zfill(3) +  "_" + str(pageNumber).zfill(3) + ".jpg"
 
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
@@ -33,18 +33,18 @@ def downloadPage(pageURL, pageNumber, chapterDir, chapterNumber):
 
         urllib.request.urlretrieve(links[len(links) - 1], pagePath)
         
-        print("Download da página " + str(pageNumber).zfill(2) + " feito com sucesso.")
+        print("Download da página " + str(pageNumber).zfill(3) + " feito com sucesso.")
     except:
-        print("Erro Download da página " + str(pageNumber).zfill(2))
+        print("Erro Download da página " + str(pageNumber).zfill(3))
 
 def downloadChapter(url, chapterNumber, mangaDir):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-    chapterDir = mangaDir + "/" + "Chapter_" + str(chapterNumber).zfill(2)
+    chapterDir = mangaDir + "/" + "Chapter_" + str(chapterNumber).zfill(3)
 
     if(not os.path.exists(chapterDir)):
         os.mkdir(chapterDir)
-        print("Criando diretório para capítulo " + str(chapterNumber).zfill(2))
+        print("Criando diretório para capítulo " + str(chapterNumber).zfill(3))
 
     page_index = 0
 
@@ -105,6 +105,7 @@ def fetchChapters(url):
 def main():
     manga = input("Qual nome do manga ?")
     mangaURL = input("Qual o link base do manga que deseja baixar ?")
+    starting_chapter = int(input('Deseja começa baixando a partir de qual capítulo ?'))
 
     mainDir = "Mangas"
     mangaDir = mainDir + "/" + manga
@@ -122,13 +123,13 @@ def main():
 
     chapters.reverse()
 
-    startingPage = 0
+    starting_chapter = 0
     for i in range(len(chapters)):
-        if(i + startingPage >= len(chapters)):
+        if(i + starting_chapter >= len(chapters)):
             break
-        chapterDir = downloadChapter(chapters[i+startingPage], i+startingPage, mangaDir)
-        print("docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title='" + manga + " - " + str(i+startingPage).zfill(2) + "' '" + chapterDir + "'")
-        subprocess.call('docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title="' + manga + ' - ' + str(i+startingPage).zfill(2) + '" "' + chapterDir + '"', shell=True)
+        chapterDir = downloadChapter(chapters[i+starting_chapter], i+starting_chapter, mangaDir)
+        print("docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title='" + manga + " - " + str(i+starting_chapter).zfill(3) + "' '" + chapterDir + "'")
+        subprocess.call('docker exec -it kcc-cli kcc-c2e --format=EPUB -u -s --title="' + manga + ' - ' + str(i+starting_chapter).zfill(3) + '" "' + chapterDir + '"', shell=True)
 
 if __name__ == "__main__":
     main()
